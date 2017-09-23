@@ -11,12 +11,13 @@
     
 #define A 0
 #define B 1
-#define saida 2
+#define C 2
 
 
-int estadoEntradaA = 0; 
-int estadoEntradaB = 0; 
-int resultado = 0; 
+//int estadoEntradaA = 0; 
+//int estadoEntradaB = 0; 
+int resultado = 0;
+int EstadoSaida = 0; 
                                
 
 // WIFI
@@ -31,44 +32,49 @@ int BROKER_PORT = 1883;
 //Variáveis e objetos globais
 WiFiClient espClient; // Cria o objeto espClient
 PubSubClient MQTT(espClient); // Instancia o Cliente MQTT passando o objeto espClient
-int EstadoSaida = 0;  //variável que armazena o estado atual da saída
  
-//Prototypes
+ 
+/*Prototypes
 void initSerial();
 void initWiFi();
 void initMQTT();
 void reconectWiFi(); 
 void mqtt_callback(char* topic, byte* payload, unsigned int length);
 void VerificaConexoesWiFIEMQTT(void);
-
+*/
  
 void setup() 
 {
  //inicializações:
  
+   Serial.begin(115200);
+   pinMode(A, OUTPUT);
+   pinMode(B, OUTPUT);
+   pinMode(C, OUTPUT);
+   digitalWrite(A, LOW);
+   digitalWrite(B, LOW);
+   digitalWrite(C, LOW);
    
-    initSerial();
     initWiFi();
     initMQTT();
-    initpinMode();
+   
    
     
 }
 
-void initpinMode(){
-   pinMode(A, OUTPUT);
-   pinMode(B, OUTPUT);
-   pinMode(saida, OUTPUT);
-   digitalWrite(A, LOW);
-   digitalWrite(B, LOW);
-   digitalWrite(saida, LOW);
+
+void loop() 
+{   
+  
+  EnviaEstadoOutputMQTT();
+  VerificaConexoesWiFIEMQTT();
+  //ligaLeds(); 
+  MQTT.loop();
+  
+    
 }
 
-void initSerial() 
-{
-    Serial.begin(115200);
-}
- 
+
 
 void initWiFi() 
 {
@@ -102,63 +108,25 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length)
   
     //toma ação dependendo da string recebida:
     
-    if (msg.equals("OFF"))
-    {
+    if (msg.equals("OFF")){
       EstadoSaida = 0;
       digitalWrite(A, LOW);
       digitalWrite(B, LOW);
-      digitalWrite(saida, LOW);
+      digitalWrite(C, LOW);
     }
-    
-    if (msg.equals("AND"))
-    {
-      resultado = estadoEntradaA && estadoEntradaB;
-      digitalWrite(saida, resultado);
+      
+    if (msg.equals("AND"))    
       EstadoSaida = 1;
-    }
- 
-    //verifica se deve colocar nivel alto de tensão na saída D0:
-    if (msg.equals("OR"))
-    {
-      resultado = estadoEntradaA || estadoEntradaB;
-      digitalWrite(saida, resultado);
-      //delay(500)
+    if (msg.equals("OR"))    
       EstadoSaida = 2;
-    }
-
-    if (msg.equals("NAND"))
-    {
-      resultado = !(estadoEntradaA && estadoEntradaB);
-      digitalWrite(saida, resultado);
-      //delay(500)
+    if (msg.equals("NAND"))    
       EstadoSaida = 3;
-    }
-
-     if (msg.equals("NOR"))
-    {
-      resultado = !(estadoEntradaA || estadoEntradaB);
-      digitalWrite(saida, resultado);
-      //delay(500)
+     if (msg.equals("NOR"))    
       EstadoSaida = 4;
-    }
-
-    if (msg.equals("XOR"))
-    {
-      resultado = estadoEntradaA ^ estadoEntradaB;
-      digitalWrite(saida, resultado);
-      //delay(500)
+    if (msg.equals("XOR"))    
       EstadoSaida = 5;
-    }
-
-     if (msg.equals("XNOR"))
-    {
-      resultado = !(estadoEntradaA ^ estadoEntradaB);
-      digitalWrite(saida, resultado);
-      //delay(500)
+     if (msg.equals("XNOR"))    
       EstadoSaida = 6;
-    }
-
-        
 }
 
 
@@ -177,7 +145,7 @@ void reconnectMQTT()
         {
             Serial.println("Falha ao reconectar no broker.");
             Serial.println("Havera nova tentatica de conexao em 2s");
-            delay(2000);
+            delay(1000);
         }
     }
 }
@@ -216,70 +184,136 @@ void VerificaConexoesWiFIEMQTT(void)
 void EnviaEstadoOutputMQTT(void)
 {
 
-    if (EstadoSaida == 0)
-      MQTT.publish(TOPICO_PUBLISH, "OFF");
-      
-    if (EstadoSaida == 1)
+    if (EstadoSaida == 0)    
+      MQTT.publish(TOPICO_PUBLISH, "OFF");     
+    if (EstadoSaida == 1){
+
       MQTT.publish(TOPICO_PUBLISH, "AND");
- 
-    if (EstadoSaida == 2)
+      ligaLeds();
+        
+    }
+                    
+    if (EstadoSaida == 2){
       MQTT.publish(TOPICO_PUBLISH, "OR");
-
-    if (EstadoSaida == 3)
+      ligaLeds();          
+    }   
+      
+    if (EstadoSaida == 3){
       MQTT.publish(TOPICO_PUBLISH, "NAND");
-
-    if (EstadoSaida == 4)
+      ligaLeds();
+    }
+      
+    if (EstadoSaida == 4){
       MQTT.publish(TOPICO_PUBLISH, "NOR");
-
-    if (EstadoSaida == 5)
+      ligaLeds();
+    }
+      
+    if (EstadoSaida == 5){
       MQTT.publish(TOPICO_PUBLISH, "XOR");
-
-    if (EstadoSaida == 6)
+      ligaLeds();       
+    }
+      
+    if (EstadoSaida == 6){
       MQTT.publish(TOPICO_PUBLISH, "XNOR");
- 
+      ligaLeds();      
+    }
+      
     //Serial.println("- Estado de saida enviado ao broker!");
-    delay(400);
-}
- 
-
-void estadoLed(){
-  
-    estadoEntradaA = digitalRead(A); // Lê o estado da entrada A
-    estadoEntradaB = digitalRead(B); // Lê o estado da entrada B
-
+    delay(500);
 }
 
 void ligaLeds(){
-    if ((EstadoSaida > 0) && (EstadoSaida <= 6)){
       
       digitalWrite(A, LOW);
       digitalWrite(B, LOW);
-      delay(1500);
+      portasLogicas();
+      digitalWrite(C, resultado);
+      delay(1000);
       digitalWrite(A, HIGH);
       digitalWrite(B, LOW);
-      delay(1500);
+      portasLogicas();
+      digitalWrite(C, resultado);
+      delay(1000);
       digitalWrite(A, LOW);
       digitalWrite(B, HIGH);
-      delay(1500);
+      portasLogicas();
+      digitalWrite(C, resultado);
+      delay(1000);
       digitalWrite(A, HIGH);
       digitalWrite(B, HIGH);
-      delay(1500);
+      portasLogicas();
+      digitalWrite(C, resultado);
+      delay(1000);
       
       
-    }
+    
+}
+
+void portasLogicas(){
+  if (EstadoSaida == 1)
+  resultado = (A && B);
+  //portaAND();
+  if (EstadoSaida == 2)
+  resultado = (A||B);
+  //portaOR();
+  if (EstadoSaida == 3)
+  portaNAND();
+  if (EstadoSaida == 4)
+  portaNOR();
+  if (EstadoSaida == 5)
+  portaXOR();
+  if (EstadoSaida == 6)
+  portaXNOR();
+  
+}
+
+void portaAND(){
+  resultado = (A && B);
+    
+}
+
+void portaOR(){
+  resultado = (A||B);
+  
+  digitalWrite(C, resultado);
+  delay(1000);
+  
+}
+
+void portaNAND(){
+
+  resultado = (!(A && B));
+  digitalWrite(C, resultado);
+  delay(1000);
+  
+}
+
+void portaNOR(){
+
+  resultado = (!(A || B));
+  digitalWrite(C, resultado);
+  delay(1000);
+  
+}
+
+void portaXOR(){
+
+  resultado = (A ^ B);
+  digitalWrite(C, resultado);
+  delay(1000);
+  
+}
+
+void portaXNOR(){
+
+  resultado = (!(A ^ B));
+  digitalWrite(C, resultado);
+  delay(1000);
+  
 }
 
 
- 
-//programa principal
-void loop() 
-{   
-    VerificaConexoesWiFIEMQTT();
-    EnviaEstadoOutputMQTT();
-    MQTT.loop();
-    estadoLed();
-    ligaLeds();
-}
+
 
 
 
