@@ -1,0 +1,11 @@
+- Criar um programa que verifique as condições das portas lógicas.
+
+- Em 22/09/2017 criado o portaslogicas.ino - baseado no espmqtt.ino para utilizar o protocolo mqtt
+
+- Foi criado um repositório no github e subido o projeto- nome: portaslogicasMqtt
+
+- utilizar o programa no esp8266-12 (Sem sucesso)
+- Utilizando o programa no Esp8266-01, utilizando gpio 0, 2 e o tx (1) como output
+- Algoritmo das portas lógicas ainda não está funcionando.
+
+Em 23/09/2017

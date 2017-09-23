@@ -4,33 +4,34 @@
 #include <ESP8266WiFi.h> // Importa a Biblioteca ESP8266WiFi
 #include <PubSubClient.h> // Importa a Biblioteca PubSubClient
  
-//defines:
-//defines de id mqtt e tópicos para publicação e subscribe
-#define TOPICO_SUBSCRIBE "CircuitosDigitais/PortasLogicas"     //tópico MQTT de escuta
-#define TOPICO_PUBLISH   "CircuitosDigitais/PortasLogicas/ESP8266"    //tópico MQTT de envio de informações para Broker
-#define ID_MQTT  "CD"     //id mqtt (para identificação de sessão)
-#define A 2;
-#define B 3;
-#define saida 4;
 
-int estadoEntradaA = 0; // Inicializando a variavel de estado da entrada digital A
-int estadoEntradaB = 0; // Inicializando a variavel de estado da entrada digital B
-int resultado = 0; // Inicializando a variavel de estado da saída digital
+#define TOPICO_SUBSCRIBE "CircuitosDigitais/PortasLogicas"     
+#define TOPICO_PUBLISH   "CircuitosDigitais/PortasLogicas/ESP8266"    
+#define ID_MQTT  "CD" 
+    
+#define A 0
+#define B 1
+#define saida 2
+
+
+int estadoEntradaA = 0; 
+int estadoEntradaB = 0; 
+int resultado = 0; 
                                
 
 // WIFI
-const char* SSID = "G&V"; // SSID / nome da rede WI-FI que deseja se conectar
-const char* PASSWORD = "jsilva996**"; // Senha da rede WI-FI que deseja se conectar
+const char* SSID = "G&V"; 
+const char* PASSWORD = "jsilva996**"; 
  
 // MQTT
-const char* BROKER_MQTT = "192.168.0.14"; //URL do broker MQTT que se deseja utilizar
-int BROKER_PORT = 1883; // Porta do Broker MQTT
+const char* BROKER_MQTT = "192.168.0.14"; 
+int BROKER_PORT = 1883; 
  
  
 //Variáveis e objetos globais
 WiFiClient espClient; // Cria o objeto espClient
 PubSubClient MQTT(espClient); // Instancia o Cliente MQTT passando o objeto espClient
-char EstadoSaida = '0';  //variável que armazena o estado atual da saída
+int EstadoSaida = 0;  //variável que armazena o estado atual da saída
  
 //Prototypes
 void initSerial();
@@ -43,8 +44,9 @@ void VerificaConexoesWiFIEMQTT(void);
  
 void setup() 
 {
-    //inicializações:
-    InitOutput();
+ //inicializações:
+ 
+   
     initSerial();
     initWiFi();
     initMQTT();
@@ -82,8 +84,8 @@ void initWiFi()
 
 void initMQTT() 
 {
-    MQTT.setServer(BROKER_MQTT, BROKER_PORT);   //informa qual broker e porta deve ser conectado
-    MQTT.setCallback(mqtt_callback);            //atribui função de callback (função chamada quando qualquer informação de um dos tópicos subescritos chega)
+    MQTT.setServer(BROKER_MQTT, BROKER_PORT);   
+    MQTT.setCallback(mqtt_callback);           
 }
 
 
@@ -99,15 +101,20 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length)
     }
   
     //toma ação dependendo da string recebida:
-    //verifica se deve colocar nivel alto de tensão na saída D0:
+    
+    if (msg.equals("OFF"))
+    {
+      EstadoSaida = 0;
+      digitalWrite(A, LOW);
+      digitalWrite(B, LOW);
+      digitalWrite(saida, LOW);
+    }
     
     if (msg.equals("AND"))
     {
       resultado = estadoEntradaA && estadoEntradaB;
       digitalWrite(saida, resultado);
-      delay(500)
-        
-        EstadoSaida = '1';
+      EstadoSaida = 1;
     }
  
     //verifica se deve colocar nivel alto de tensão na saída D0:
@@ -115,42 +122,43 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length)
     {
       resultado = estadoEntradaA || estadoEntradaB;
       digitalWrite(saida, resultado);
-      delay(500)
-      EstadoSaida = '2';
+      //delay(500)
+      EstadoSaida = 2;
     }
 
     if (msg.equals("NAND"))
     {
       resultado = !(estadoEntradaA && estadoEntradaB);
       digitalWrite(saida, resultado);
-      delay(500)
-      EstadoSaida = '3';
+      //delay(500)
+      EstadoSaida = 3;
     }
 
      if (msg.equals("NOR"))
     {
       resultado = !(estadoEntradaA || estadoEntradaB);
       digitalWrite(saida, resultado);
-      delay(500)
-      EstadoSaida = '4';
+      //delay(500)
+      EstadoSaida = 4;
     }
 
     if (msg.equals("XOR"))
     {
       resultado = estadoEntradaA ^ estadoEntradaB;
       digitalWrite(saida, resultado);
-      delay(500)
-      EstadoSaida = '5';
+      //delay(500)
+      EstadoSaida = 5;
     }
 
      if (msg.equals("XNOR"))
     {
       resultado = !(estadoEntradaA ^ estadoEntradaB);
       digitalWrite(saida, resultado);
-      delay(500)
-      EstadoSaida = '6';
+      //delay(500)
+      EstadoSaida = 6;
     }
-    
+
+        
 }
 
 
@@ -207,26 +215,30 @@ void VerificaConexoesWiFIEMQTT(void)
 
 void EnviaEstadoOutputMQTT(void)
 {
-    if (EstadoSaida == '1')
+
+    if (EstadoSaida == 0)
+      MQTT.publish(TOPICO_PUBLISH, "OFF");
+      
+    if (EstadoSaida == 1)
       MQTT.publish(TOPICO_PUBLISH, "AND");
  
-    if (EstadoSaida == '2')
+    if (EstadoSaida == 2)
       MQTT.publish(TOPICO_PUBLISH, "OR");
 
-    if (EstadoSaida == '3')
+    if (EstadoSaida == 3)
       MQTT.publish(TOPICO_PUBLISH, "NAND");
 
-    if (EstadoSaida == '4')
+    if (EstadoSaida == 4)
       MQTT.publish(TOPICO_PUBLISH, "NOR");
 
-    if (EstadoSaida == '5')
+    if (EstadoSaida == 5)
       MQTT.publish(TOPICO_PUBLISH, "XOR");
 
-    if (EstadoSaida == '6')
+    if (EstadoSaida == 6)
       MQTT.publish(TOPICO_PUBLISH, "XNOR");
  
-    Serial.println("- Estado de saida enviado ao broker!");
-    delay(200);
+    //Serial.println("- Estado de saida enviado ao broker!");
+    delay(400);
 }
  
 
@@ -237,6 +249,26 @@ void estadoLed(){
 
 }
 
+void ligaLeds(){
+    if ((EstadoSaida > 0) && (EstadoSaida <= 6)){
+      
+      digitalWrite(A, LOW);
+      digitalWrite(B, LOW);
+      delay(1500);
+      digitalWrite(A, HIGH);
+      digitalWrite(B, LOW);
+      delay(1500);
+      digitalWrite(A, LOW);
+      digitalWrite(B, HIGH);
+      delay(1500);
+      digitalWrite(A, HIGH);
+      digitalWrite(B, HIGH);
+      delay(1500);
+      
+      
+    }
+}
+
 
  
 //programa principal
@@ -245,7 +277,8 @@ void loop()
     VerificaConexoesWiFIEMQTT();
     EnviaEstadoOutputMQTT();
     MQTT.loop();
-    void estadoLed();
+    estadoLed();
+    ligaLeds();
 }
 
 
