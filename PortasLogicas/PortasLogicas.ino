@@ -13,10 +13,10 @@
 #define B 1
 #define C 2
 
+boolean pinoA;
+boolean pinoB;
+boolean resultado;
 
-//int estadoEntradaA = 0; 
-//int estadoEntradaB = 0; 
-int resultado = 0;
 int EstadoSaida = 0; 
                                
 
@@ -227,22 +227,18 @@ void ligaLeds(){
       digitalWrite(A, LOW);
       digitalWrite(B, LOW);
       portasLogicas();
-      digitalWrite(C, resultado);
       delay(1000);
       digitalWrite(A, HIGH);
       digitalWrite(B, LOW);
       portasLogicas();
-      digitalWrite(C, resultado);
       delay(1000);
       digitalWrite(A, LOW);
       digitalWrite(B, HIGH);
       portasLogicas();
-      digitalWrite(C, resultado);
       delay(1000);
       digitalWrite(A, HIGH);
       digitalWrite(B, HIGH);
       portasLogicas();
-      digitalWrite(C, resultado);
       delay(1000);
       
       
@@ -250,12 +246,14 @@ void ligaLeds(){
 }
 
 void portasLogicas(){
+  
+  pinoA = digitalRead(A);
+  pinoB = digitalRead(B);
+    
   if (EstadoSaida == 1)
-  resultado = (A && B);
-  //portaAND();
+  portaAND();  
   if (EstadoSaida == 2)
-  resultado = (A||B);
-  //portaOR();
+  portaOR();
   if (EstadoSaida == 3)
   portaNAND();
   if (EstadoSaida == 4)
@@ -268,13 +266,14 @@ void portasLogicas(){
 }
 
 void portaAND(){
-  resultado = (A && B);
+  resultado = (pinoA && pinoB);
+  digitalWrite(C, resultado);
+  delay(1000);
     
 }
 
 void portaOR(){
-  resultado = (A||B);
-  
+  resultado = (pinoA||pinoB);  
   digitalWrite(C, resultado);
   delay(1000);
   
@@ -282,7 +281,7 @@ void portaOR(){
 
 void portaNAND(){
 
-  resultado = (!(A && B));
+  resultado = (!(pinoA && pinoB));
   digitalWrite(C, resultado);
   delay(1000);
   
@@ -290,7 +289,7 @@ void portaNAND(){
 
 void portaNOR(){
 
-  resultado = (!(A || B));
+  resultado = (!(pinoA || pinoB));
   digitalWrite(C, resultado);
   delay(1000);
   
@@ -298,7 +297,7 @@ void portaNOR(){
 
 void portaXOR(){
 
-  resultado = (A ^ B);
+  resultado = (pinoA ^ pinoB);
   digitalWrite(C, resultado);
   delay(1000);
   
@@ -306,7 +305,7 @@ void portaXOR(){
 
 void portaXNOR(){
 
-  resultado = (!(A ^ B));
+  resultado = (!(pinoA ^ pinoB));
   digitalWrite(C, resultado);
   delay(1000);
   

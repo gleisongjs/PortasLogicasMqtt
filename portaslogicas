@@ -9,3 +9,11 @@
 - Algoritmo das portas lógicas ainda não está funcionando.
 
 Em 23/09/2017
+
+- Alterado o código, criado as seguintes funções:
+- portaAND, portaOR, portaNAND, portaNOR, portaXOR, portaXNOR e portaslogicas
+- Algoritmo das portas lógicas ainda não está funcionando.
+
+Em 24/09/2017
+
+- Após alterar o algoritmo, as análises das portas lógicas devem ser feitas com variáveis booleanas, no arduino não foi necessário utilizar variáveis booleanas, essa foi o grande problema.
