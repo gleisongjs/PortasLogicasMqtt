@@ -21,27 +21,17 @@ int EstadoSaida = 0;
                                
 
 // WIFI
-const char* SSID = "G&V"; 
-const char* PASSWORD = "jsilva996**"; 
+const char* SSID = "Transformers II"; 
+const char* PASSWORD = "12345678*"; 
  
 // MQTT
-const char* BROKER_MQTT = "192.168.0.14"; 
+const char* BROKER_MQTT = "172.20.10.5"; 
 int BROKER_PORT = 1883; 
  
  
 //Variáveis e objetos globais
 WiFiClient espClient; // Cria o objeto espClient
 PubSubClient MQTT(espClient); // Instancia o Cliente MQTT passando o objeto espClient
- 
- 
-/*Prototypes
-void initSerial();
-void initWiFi();
-void initMQTT();
-void reconectWiFi(); 
-void mqtt_callback(char* topic, byte* payload, unsigned int length);
-void VerificaConexoesWiFIEMQTT(void);
-*/
  
 void setup() 
 {
@@ -56,9 +46,7 @@ void setup()
    digitalWrite(C, LOW);
    
     initWiFi();
-    initMQTT();
-   
-   
+    initMQTT();   
     
 }
 
