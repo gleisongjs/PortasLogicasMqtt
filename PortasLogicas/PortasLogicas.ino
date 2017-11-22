@@ -21,11 +21,11 @@ int EstadoSaida = 0;
                                
 
 // WIFI
-const char* SSID = "Transformers II"; 
-const char* PASSWORD = "12345678*"; 
+const char* SSID = "G&V"; 
+const char* PASSWORD = "jsilva996*"; 
  
 // MQTT
-const char* BROKER_MQTT = "172.20.10.5"; 
+const char* BROKER_MQTT = "192.168.0.14"; 
 int BROKER_PORT = 1883; 
  
  
